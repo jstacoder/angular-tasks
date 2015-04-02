@@ -1,0 +1,70 @@
+<html ng-app="task.app">
+    <head>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" />
+    </head>
+    <body ng-controller="TaskListCtrl as ctrl">
+        
+        <p>
+            {{ ctrl.tasks | json }}
+            
+        </p>
+        <div class=container>
+            <div class=row>
+                <div class=col-md-6>
+                    <form name=taskForm novalidate>
+                        <div class="panel panel-default">
+                            <div  class=panel-body>
+                                <div class=form-group>
+                                    <label for="title">Title</label>
+                                    <input class="form-control" type=text ng-model="task.title" name="title" />
+                                </div>
+                                <div class=form-group>            
+                                    <label for="content">content</label>
+                                    <textarea class="form-control" ng-model="task.content" name="content"></textarea>
+                                </div>
+                                <div class=form-group>
+                                    <label for="due">Due Date</label>
+                                    <input class="form-control" type="date" name=due ng-model="task.due" />
+                                </div>
+                            </div>
+                            <div class=panel-footer>
+                                <button class="btn btn-primary" ng-click="addTask()">submit</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class=col-md-6>        
+                    <table class="table table-bordered table-hover table-condensed">
+                        <thead>
+                            <tr>
+                                <th width="2%">done</th>
+                                <th>title</th>
+                                <th>content</th>
+                                <th>due date</th>
+                                <th>completed</th>
+                                <th width="2%">Remove</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr
+                                ng-repeat="task in ctrl.tasks">
+                                <!--<td><input type=checkbox class="text-center checkbox" /></td>-->
+                                    <td><finish-box task="task"></finish-box></td>
+                                
+                                    <td class="title" ng-bind="task.title"></td>
+                                    <td ng-bind="task.content"></td>
+                                    <td ng-bind="task.date_due | mydate"></td>
+                                    <td>{{ task.completed }}</td>
+                                    <!--<td class="text-center" width="2%"><span class="glyphicon glyphicon-remove text-danger" style="cursor:pointer;"></span></td>-->
+                                    <td class="text-center" width="2%"><close-button task=task></close-button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <script src="angular-1.4.0-beta.2/angular.js"></script>
+        <script src="task.js"></script>
+    </body>
+</html>
