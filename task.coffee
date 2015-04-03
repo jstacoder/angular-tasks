@@ -1,13 +1,34 @@
 'use strict'
 
+forEach = angular.forEach
+element = angular.element
+
 app = angular.module 'task.app',[]
+
+
 
 app.factory 'ids',[() ->
     []
 ]
 
-app.factory 'tasks',[() ->
-    []
+app.factory 'tasks',['loadData',(loadData) ->
+    tasks = []
+    query = loadData('data.json').then (res)->
+        forEach res,(itm)->
+            tasks.push itm
+            return
+        return
+    tasks
+]
+
+app.factory 'loadData',['$q','$http',($q,$http)->
+    return (filename)->
+        defer = $q.defer()
+        $http.get(filename)
+        .then (res) ->
+            defer.resolve res.data
+        return defer.promise
+        
 ]
 
 app.filter 'YN',[() ->
@@ -110,9 +131,15 @@ app.directive 'finishBox',['taskService',(taskService) ->
             task:"="
         link:(scope,ele,attrs)->
             scope.complete = ()->
-                txt = angular.element(document.getElementsByTagName('td')[1]).text()
+                currIdx = null
+                checkboxs = document.getElementsByClassName 'checkbox'
+                forEach checkboxs,(itm,idx)->
+                    if angular.equals itm,ele[0]
+                        currIdx = idx
+                #txt = angular.element(document.getElementsByTagName('td')[1]).text()
+                txt = angular.element(document.getElementsByTagName('td')[idx]).text()
                 console.log txt
-                angular.element(document.getElementsByTagName('td')[1]).html "<s>#{txt}</s>"
+                angular.element(document.getElementsByTagName('td')[idx]).html "<s>#{txt}</s>"
                 scope.$emit 'task:complete' , attrs.task
                 return
             return
