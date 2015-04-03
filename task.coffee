@@ -8,7 +8,7 @@ app = angular.module 'task.app',[]
 
 
 app.factory 'ids',[() ->
-    [0,1,2]
+    []
 ]
 
 app.factory 'tasks',['loadData',(loadData) ->
@@ -28,7 +28,6 @@ app.factory 'loadData',['$q','$http',($q,$http)->
         .then (res) ->
             defer.resolve res.data
         return defer.promise
-        
 ]
 
 app.filter 'YN',[() ->
@@ -62,26 +61,33 @@ app.factory 'removeTask',['tasks',(tasks) ->
 
 app.service 'taskService',['tasks','addTask','removeTask',(tasks,addTask,removeTask) ->
     self = @
-    
+
     self.addTask = (title,content,due) ->
         addTask
             title: title
             content: content
             due: due
-    
+        self.updateTasks()
+        return
+
     self.removeTask = removeTask
-    self.tasks = tasks
+    self.updateTasks = ()->
+        self.tasks = tasks
+        return
+
     self.getTask = (id) ->
         rtn = null
         forEach self.tasks,(itm)->
-            if itm.id == id
+            if itm.id == parseInt id
                 rtn = itm
+                return
         return rtn
-    
+
     self.getAllTasks = () ->
         return self.tasks
     self.completeTask = (task)->
         #task._complete = 'Yes'
+    self.updateTasks()
     return
 ]
 
@@ -128,17 +134,17 @@ app.factory 'addCompleteTask', ['taskService','completeTaskList',(taskService,co
 
 app.service 'completeTaskService', ['addCompleteTask','removeCompleteTask','completeTaskList',(addCompleteTask,removeCompleteTask,completeTaskList)->
     self = @
-    
+
     self.addTask = addCompleteTask
     self.removeTask = removeCompleteTask
     self.tasks = completeTaskList
-    
+
     self.getTask = (id)->
         forEach self.tasks,(itm)->
             if itm.id == id
                 return itm
         return null
-        
+
     self.getAllTasks = ()->
         return self.tasks
     return
@@ -149,17 +155,17 @@ app.factory 'reopenCompleteTask', ['completeTaskService','taskService',(complete
     return (id)->
         task = completeTaskService.getTask id
         completeTaskService.removeTask task
-        taskService.addTask task.title,task.content,task.due        
+        taskService.addTask task.title,task.content,task.due
 ]
 
 app.service 'state',['addTask',(addTask) ->
     self = @
     self.setTitle = (@title)->
-        
+
     self.setContent = (@content)->
-    
+
     self.setDueDate = (@due) ->
-    
+
     self.addTask = () ->
         self.task =
             formTask: addTask(
@@ -181,14 +187,15 @@ app.directive 'finishBox',['taskService','completeTaskService',(taskService,comp
         scope:
             complete: "&"
             task:"="
-        link:(scope,ele,attrs)->            
+        link:(scope,ele,attrs)->
             scope.complete = ()->
                 id = ele.parent().parent().attr('id')
                 console.log 'id: ',id
-                
+
                 console.log 'adding: ',id
+                console.log 'task: ', attrs.task
                 completeTaskService.addTask id
-                
+
                 #currIdx = 0
                 #rows = document.getElementsByClassName 'tableRow'
                 #forEach rows,(itm,idx)->
@@ -231,10 +238,11 @@ app.directive 'closeButton',['removeTask', (removeTask) ->
 
 app.controller 'TaskListCtrl',['completeTaskService','taskService','$scope','ids',(completeTaskService,taskService,$scope,ids)->
         self = @
-        
+
         $scope.ids = ids;
-            
-            
+        $scope.taskService = taskService
+
+
         self.setComplete = ()->
             if not $scope.$parent.$$phase
                 $scope.$apply ()->
@@ -244,7 +252,7 @@ app.controller 'TaskListCtrl',['completeTaskService','taskService','$scope','ids
                 self.completeTasks = completeTaskService.getAllTasks()
                 return
         self.setComplete()
-            
+
         self.setTasks = ()->
             if not $scope.$parent.$$phase
                 $scope.$apply ()->
@@ -253,26 +261,26 @@ app.controller 'TaskListCtrl',['completeTaskService','taskService','$scope','ids
             else
                 self.tasks = taskService.getAllTasks()
             return
-            
+
         self.setTasks()
-        
+
         $scope.addTask = ()->
             taskService.addTask $scope.task.title,$scope.task.content,$scope.task.due
             $scope.resetTask()
             return
-        
+
         $scope.resetTask = ()->
             $scope.task =
                 title:''
                 content:''
                 due:''
-                
+
         $scope.getComplete = (arg)->
             if arg
                 return 'Yes'
             else
                 return 'No'
-            
+
         $scope.$on 'task:removed', (task)->
             console.log "removing:", task.targetScope.task.title
             taskService.removeTask task.targetScope.task
@@ -282,7 +290,7 @@ app.controller 'TaskListCtrl',['completeTaskService','taskService','$scope','ids
 
         $scope.$on 'task:complete',(event,task)->
             taskService.completeTask task
-        
+
         $scope.resetTask()
         return
 ]

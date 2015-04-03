@@ -3,10 +3,10 @@
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" />
     </head>
     <body ng-controller="TaskListCtrl as ctrl">
-        
+
         <p>
             {{ ctrl.tasks | json }}
-            
+
         </p>
         <div class=container>
             <div class=row>
@@ -18,7 +18,7 @@
                                     <label for="title">Title</label>
                                     <input class="form-control" type=text ng-model="task.title" name="title" />
                                 </div>
-                                <div class=form-group>            
+                                <div class=form-group>
                                     <label for="content">content</label>
                                     <textarea class="form-control" ng-model="task.content" name="content"></textarea>
                                 </div>
@@ -54,8 +54,7 @@
                                         id="{{ task.id }}"
                                     >
                                         <!--<td><input type=checkbox class="text-center checkbox" /></td>-->
-                                            <td><finish-box task="task"></finish-box></td>
-                                            
+                                            <td><finish-box task=task id="{{ task.id }}"></finish-box></td>
                                             <td class="title" ng-bind="task.title"></td>
                                             <td ng-bind="task.content"></td>
                                             <td ng-bind="task.date_due | mydate"></td>
