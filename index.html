@@ -70,7 +70,10 @@
                                 <thead>
                                     <tr ng-repeat="completeTask in ctrl.completeTasks track by $index">
                                         <th>
-                                            {{ completeTask.title }}
+                                            <s>{{ completeTask.title }}</s>
+                                        </th>
+                                        <th>
+                                            <button class="btn btn-primary btn-block" ng-click="reopenCompleteTask(completeTask.id)">Reopen</button>
                                         </th>
                                     </tr>
                                 </thead>

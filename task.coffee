@@ -38,11 +38,13 @@ app.filter 'YN',[() ->
 ]
 app.filter 'mydate',[() ->
     return (data)->
-        dte = data.split '-'
-        y = dte[0]
-        m = dte[1]
-        d = dte[2]
-        return "#{m}-#{d}-#{y}"
+        if data != null
+            dte = data.split '-'
+            y = dte[0]
+            m = dte[1]
+            d = dte[2]
+            return "#{m}-#{d}-#{y}"
+        return ''
 ]
 app.factory 'addTask',['tasks','newTask',(tasks,newTask) ->
     return (cfg) ->
@@ -100,15 +102,20 @@ app.factory 'getId',['ids',(ids)->
 
 app.factory 'newTask',['getId',(getId) ->
     return (title,content,due) ->
+        if due
+            if due instanceof Date
+                due = due.toISOString().split('T')[0]
+        rtn =
         id : getId()
         title: title
         content : content
         date_added : new Date().toISOString().split('T')[0]
-        date_due : due.toISOString().split('T')[0]
+        date_due : due
         complete : false
         _complete : 'No'
         archived : false
         date_completed : null
+        return rtn
 ]
 
 app.factory 'completeTaskList', [()->
@@ -140,10 +147,12 @@ app.service 'completeTaskService', ['addCompleteTask','removeCompleteTask','comp
     self.tasks = completeTaskList
 
     self.getTask = (id)->
+        rtn = null
         forEach self.tasks,(itm)->
-            if itm.id == id
-                return itm
-        return null
+            if itm.id == parseInt id
+                rtn = itm
+                return
+        return rtn
 
     self.getAllTasks = ()->
         return self.tasks
@@ -155,7 +164,8 @@ app.factory 'reopenCompleteTask', ['completeTaskService','taskService',(complete
     return (id)->
         task = completeTaskService.getTask id
         completeTaskService.removeTask task
-        taskService.addTask task.title,task.content,task.due
+        console.log task.date_due
+        taskService.addTask task.title,task.content,task.date_due
 ]
 
 app.service 'state',['addTask',(addTask) ->
@@ -236,11 +246,12 @@ app.directive 'closeButton',['removeTask', (removeTask) ->
     return cfg
 ]
 
-app.controller 'TaskListCtrl',['completeTaskService','taskService','$scope','ids',(completeTaskService,taskService,$scope,ids)->
+app.controller 'TaskListCtrl',['completeTaskService','taskService','$scope','ids','reopenCompleteTask',(completeTaskService,taskService,$scope,ids,reopen)->
         self = @
 
         $scope.ids = ids;
         $scope.taskService = taskService
+        $scope.reopenCompleteTask = reopen
 
 
         self.setComplete = ()->

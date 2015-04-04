@@ -53,11 +53,14 @@ app.filter('mydate', [
   function() {
     return function(data) {
       var d, dte, m, y;
-      dte = data.split('-');
-      y = dte[0];
-      m = dte[1];
-      d = dte[2];
-      return "" + m + "-" + d + "-" + y;
+      if (data !== null) {
+        dte = data.split('-');
+        y = dte[0];
+        m = dte[1];
+        d = dte[2];
+        return "" + m + "-" + d + "-" + y;
+      }
+      return '';
     };
   }
 ]);
@@ -129,17 +132,20 @@ app.factory('getId', [
 app.factory('newTask', [
   'getId', function(getId) {
     return function(title, content, due) {
-      return {
+      var rtn;
+      if (due) if (due instanceof Date) due = due.toISOString().split('T')[0];
+      rtn = {
         id: getId(),
         title: title,
         content: content,
         date_added: new Date().toISOString().split('T')[0],
-        date_due: due.toISOString().split('T')[0],
+        date_due: due,
         complete: false,
         _complete: 'No',
         archived: false,
         date_completed: null
       };
+      return rtn;
     };
   }
 ]);
@@ -183,10 +189,12 @@ app.service('completeTaskService', [
     self.removeTask = removeCompleteTask;
     self.tasks = completeTaskList;
     self.getTask = function(id) {
+      var rtn;
+      rtn = null;
       forEach(self.tasks, function(itm) {
-        if (itm.id === id) return itm;
+        if (itm.id === parseInt(id)) rtn = itm;
       });
-      return null;
+      return rtn;
     };
     self.getAllTasks = function() {
       return self.tasks;
@@ -200,7 +208,8 @@ app.factory('reopenCompleteTask', [
       var task;
       task = completeTaskService.getTask(id);
       completeTaskService.removeTask(task);
-      return taskService.addTask(task.title, task.content, task.due);
+      console.log(task.date_due);
+      return taskService.addTask(task.title, task.content, task.date_due);
     };
   }
 ]);
@@ -279,11 +288,12 @@ app.directive('closeButton', [
 ]);
 
 app.controller('TaskListCtrl', [
-  'completeTaskService', 'taskService', '$scope', 'ids', function(completeTaskService, taskService, $scope, ids) {
+  'completeTaskService', 'taskService', '$scope', 'ids', 'reopenCompleteTask', function(completeTaskService, taskService, $scope, ids, reopen) {
     var self;
     self = this;
     $scope.ids = ids;
     $scope.taskService = taskService;
+    $scope.reopenCompleteTask = reopen;
     self.setComplete = function() {
       if (!$scope.$parent.$$phase) {
         return $scope.$apply(function() {
