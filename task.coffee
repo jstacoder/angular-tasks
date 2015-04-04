@@ -249,6 +249,13 @@ app.directive 'closeButton',['removeTask', (removeTask) ->
 app.controller 'TaskListCtrl',['completeTaskService','taskService','$scope','ids','reopenCompleteTask',(completeTaskService,taskService,$scope,ids,reopen)->
         self = @
 
+        Object.defineProperty self, 'tst',
+            get:()->
+                return self._tst || 'good'
+            set:(val)->
+                self._tst = val
+
+
         $scope.ids = ids;
         $scope.taskService = taskService
         $scope.reopenCompleteTask = reopen

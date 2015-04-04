@@ -291,6 +291,14 @@ app.controller('TaskListCtrl', [
   'completeTaskService', 'taskService', '$scope', 'ids', 'reopenCompleteTask', function(completeTaskService, taskService, $scope, ids, reopen) {
     var self;
     self = this;
+    Object.defineProperty(self, 'tst', {
+      get: function() {
+        return self._tst || 'good';
+      },
+      set: function(val) {
+        return self._tst = val;
+      }
+    });
     $scope.ids = ids;
     $scope.taskService = taskService;
     $scope.reopenCompleteTask = reopen;
