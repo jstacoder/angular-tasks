@@ -6,7 +6,7 @@ forEach = angular.forEach;
 
 element = angular.element;
 
-app = angular.module('task.app', []);
+app = angular.module('task.app', ['tzp.directives.app']);
 
 app.factory('ids', [
   function() {

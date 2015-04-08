@@ -13,8 +13,13 @@ app.directive('sideBox', [
         title: "@"
       },
       transclude: true,
-      replacr: true,
-      template: '<div class="sidebox"> <div class="content"> <h2 class="header">{{ title }}</h2> <span class="content" ng-transclude> </span> </div> </div>'
+      
+      template: '<div class="sidebox">'+
+        '<div class="content">'+
+          '<h2 class="page-header">{{ title }}</h2>'+
+            '<ng-transclude></ng-transclude>'+
+            '</div>'+
+          '</div>'
     };
     return cfg;
   }

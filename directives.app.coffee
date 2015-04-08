@@ -9,7 +9,7 @@ app.directive 'sideBox',[()->
         scope:
             title:"@"
         transclude:true
-        replacr:true
+        #replace:true
         template:'<div class="sidebox"> <div class="content"> <h2 class="header">{{ title }}</h2> <span class="content" ng-transclude> </span> </div> </div>'
     return cfg
 ]
