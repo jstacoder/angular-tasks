@@ -1,16 +1,90 @@
 'use strict';
-var app, element, forEach,
+var app, element, forEach, projectService,
   __indexOf = Array.prototype.indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 forEach = angular.forEach;
 
 element = angular.element;
 
-app = angular.module('task.app', []);
+app = angular.module('task.app', ['layout.tools.app']);
 
 app.factory('ids', [
   function() {
     return [];
+  }
+]);
+
+app.value('projects', []);
+
+app.value('taskLists', []);
+
+app.factory('addProject', [
+  'projects', function(projects) {
+    return function(project) {
+      if (__indexOf.call(projects, project) < 0) projects.push(project);
+    };
+  }
+]);
+
+app.factory('removeProject', [
+  'projects', function(projects) {
+    return function(project) {
+      var idx;
+      if (__indexOf.call(projects, project) >= 0) {
+        idx = projects.indexOf(project);
+        projects.splice(idx, 1);
+      }
+    };
+  }
+]);
+
+app.factory('getProject', [
+  'projects', function(projects) {
+    return function(project_id) {
+      return projects.filter(function(itm) {
+        if (angular.isDefined(itm['id'])) {
+          return project_id === itm['id'];
+        } else {
+          return false;
+        }
+      });
+    };
+  }
+]);
+
+app.service('projectService', [
+  'addProject', 'removeProject', 'getProject', 'projects', projectService = (function() {
+
+    function projectService(addProject, removeProject, getProject, projects) {
+      this.addProject = addProject;
+      this.removeProject = removeProject;
+      this.getProject = getProject;
+      this.projects = projects;
+    }
+
+    return projectService;
+
+  })()
+]);
+
+app.directive('projectBox', [
+  'projectService', function(projectService) {
+    var cfg;
+    cfg = {
+      restrict: "E",
+      require: "?ngModel",
+      scope: {
+        proj: "@"
+      },
+      link: function(scope, ele, attrs, ctrl) {
+        scope.project = scope.$parent.proj;
+        console.log(scope.$parent.proj);
+        console.log(attrs);
+        console.log(ctrl.$$viewValue);
+      },
+      template: '<div class="panel panel-default">' + '<div class="panel-heading">' + '<h2 class="panel-title">{{ project.name }}</h2>' + '</div>' + '<div class="panel-body" style="color:white;background-color:{{ project.color }}">' + '{{ project.subject }}' + '</div>' + '</div>'
+    };
+    return cfg;
   }
 ]);
 
@@ -252,6 +326,7 @@ app.directive('finishBox', [
           var id;
           id = ele.parent().parent().attr('id');
           console.log('id: ', id);
+          console.log(ele);
           console.log('adding: ', id);
           console.log('task: ', attrs.task);
           completeTaskService.addTask(id);
@@ -288,8 +363,8 @@ app.directive('closeButton', [
 ]);
 
 app.controller('TaskListCtrl', [
-  'completeTaskService', 'taskService', '$scope', 'ids', 'reopenCompleteTask', function(completeTaskService, taskService, $scope, ids, reopen) {
-    var self;
+  'projectService', 'completeTaskService', 'taskService', '$scope', 'ids', 'reopenCompleteTask', function(projectService, completeTaskService, taskService, $scope, ids, reopen) {
+    var proj, proj2, self;
     self = this;
     Object.defineProperty(self, 'tst', {
       get: function() {
@@ -299,6 +374,26 @@ app.controller('TaskListCtrl', [
         return self._tst = val;
       }
     });
+    proj = {
+      name: 'test',
+      id: 2,
+      color: "#333333",
+      subject: "A new Cool Project"
+    };
+    proj2 = {
+      name: 'second test',
+      id: 54,
+      color: '#545454',
+      subject: 'lotsa stuff\
+            '
+    };
+    projectService.addProject(proj);
+    projectService.addProject(proj2);
+    self.items = {};
+    self.getProjects = function() {
+      return self.items.projects = projectService.projects;
+    };
+    self.getProjects();
     $scope.ids = ids;
     $scope.taskService = taskService;
     $scope.reopenCompleteTask = reopen;

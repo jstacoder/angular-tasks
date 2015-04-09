@@ -3,14 +3,67 @@
 forEach = angular.forEach
 element = angular.element
 
-app = angular.module 'task.app',[]
-
+app = angular.module 'task.app',['layout.tools.app']
 
 
 app.factory 'ids',[() ->
     []
 ]
 
+app.value 'projects',[]
+
+app.value 'taskLists',[]
+
+app.factory 'addProject',['projects',(projects)->
+    return (project)->
+        if project not in projects
+            projects.push project
+        return
+]
+
+app.factory 'removeProject',['projects',(projects)->
+    return (project)->
+        if project in projects
+            idx = projects.indexOf project
+            projects.splice idx,1
+        return
+]
+app.factory 'getProject',['projects',(projects)->
+    return (project_id)->
+        return projects.filter (itm)->
+            if angular.isDefined itm['id']
+                return project_id == itm['id']
+            else
+                return false
+]
+
+app.service 'projectService',['addProject','removeProject','getProject','projects',class projectService
+                              constructor: (@addProject,@removeProject,@getProject,@projects)->
+]
+
+app.directive 'projectBox',['projectService',(projectService)->
+    cfg =
+        restrict:"E"
+        require:"?ngModel"
+        scope:
+            proj:"@"
+        link:(scope,ele,attrs,ctrl)->
+            scope.project = scope.$parent.proj
+            #scope.name = scope.$parent.proj.name
+            console.log scope.$parent.proj
+            console.log attrs
+            console.log ctrl.$$viewValue
+            return
+        template:'<div class="panel panel-default">'+
+                    '<div class="panel-heading">'+
+                        '<h2 class="panel-title">{{ project.name }}</h2>'+
+                    '</div>'+
+                    '<div class="panel-body" style="color:white;background-color:{{ project.color }}">'+
+                        '{{ project.subject }}'+
+                    '</div>'+
+                '</div>'
+    return cfg
+]
 app.factory 'tasks',['loadData',(loadData) ->
     tasks = []
     query = loadData('data.json').then (res)->
@@ -200,8 +253,9 @@ app.directive 'finishBox',['taskService','completeTaskService',(taskService,comp
         link:(scope,ele,attrs)->
             scope.complete = ()->
                 id = ele.parent().parent().attr('id')
+                #id = ele.parent().parent().parent().attr('id')
                 console.log 'id: ',id
-
+                console.log ele
                 console.log 'adding: ',id
                 console.log 'task: ', attrs.task
                 completeTaskService.addTask id
@@ -246,7 +300,7 @@ app.directive 'closeButton',['removeTask', (removeTask) ->
     return cfg
 ]
 
-app.controller 'TaskListCtrl',['completeTaskService','taskService','$scope','ids','reopenCompleteTask',(completeTaskService,taskService,$scope,ids,reopen)->
+app.controller 'TaskListCtrl',['projectService','completeTaskService','taskService','$scope','ids','reopenCompleteTask',(projectService,completeTaskService,taskService,$scope,ids,reopen)->
         self = @
 
         Object.defineProperty self, 'tst',
@@ -255,7 +309,25 @@ app.controller 'TaskListCtrl',['completeTaskService','taskService','$scope','ids
             set:(val)->
                 self._tst = val
 
+        proj =
+            name:'test'
+            id:2
+            color:"#333333"
+            subject:"A new Cool Project"
+        proj2 =
+            name:'second test'
+            id:54
+            color:'#545454'
+            subject:'lotsa stuff
+            '
+        projectService.addProject proj
+        projectService.addProject proj2
+        self.items = {}
 
+        self.getProjects = ()->
+            self.items.projects = projectService.projects
+
+        self.getProjects()
         $scope.ids = ids;
         $scope.taskService = taskService
         $scope.reopenCompleteTask = reopen

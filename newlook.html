@@ -39,52 +39,112 @@ li.ui-state-default:last-child{
 #done-items li:last-child{
     border-bottom:none;
 }
-#checkAll{
+#checkAll,
+.subbtn {
     margin-top:10px;
 }
+.task-date {
+    margin-top:-30px;
+    margin-right:30px;
+}
+span.glyphicon-menu-left{
+  padding: 10px;
+  border: 1px solid black;
+  border-radius: 50%;
+  margin-right: 50px;
+  cursor: pointer;
+}
 </style>
-<div class="container">
+<body ng-app="task.app">
+<div
+    class="container"
+    ng-controller="TaskListCtrl as ctrl"
+    >
     <div class="row">
         <div class="col-md-6">
             <div class="todolist not-done">
              <h1>Todos</h1>
-                <input type="text" class="form-control add-todo" placeholder="Add todo">
-                    <button id="checkAll" class="btn btn-success">Mark all as done</button>
-                    
+                <div class=row>
+                    <div class=col-md-6>
+                        <input
+                               type="text"
+                               class="form-control add-todo"
+                               placeholder="Add todo"
+                               ng-model="task.title"
+                               name="title"
+                            />
+                            <div class="help-text">
+                                <p>
+                                    <small>
+                                        Todo Text
+                                    </small>
+                                </p>
+                            </div>
+                        </div>
+                        <div class=col-md-6>
+                            <input
+                                   type=date
+                                   class="form-control add-todo"
+                                   name=due
+                                   ng-model="task.due"
+                                   placeholder="due date"
+                            />
+                            <div class="help-text">
+                                <p>
+                                    <small>
+                                        due date
+                                    </small>
+                                </p>
+                            </div>
+                        </div>
+                        <div class=col-md-7>
+                            <button class="subbtn btn btn-primary" ng-click="addTask()">submit</button>
+                        </div>
+                        <div class=col-md-5>
+                            <button id="checkAll" class="btn btn-success">
+                                <span class="glyphicon glyphicon-ok"></span> all done
+                            </button>
+                        </div>
+                    </div>
                     <hr>
                     <ul id="sortable" class="list-unstyled">
-                    <li class="ui-state-default">
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" value="" />Take out the trash</label>
+                        <li class="ui-state-default" ng-repeat="task in ctrl.tasks"  id="{{ task.id }}">
+                                <div class="checkbox">
+                                    <label>
+                                        <finish-box task=task id=task.id></finish-box>{{ task.title }}
+                                    </label>
+                                </div>
+                                <p class="pull-right task-date">Due Date: {{ task.date_due  }}</p>
+                            </li>
+                        </ul>
+                        <div class="todo-footer">
+                            <strong>
+                                <span class="count-todos" ng-bind="ctrl.tasks.length"></span>
+                            </strong> Items Left
                         </div>
-                    </li>
-                    <li class="ui-state-default">
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" value="" />Buy bread</label>
-                        </div>
-                    </li>
-                    <li class="ui-state-default">
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" value="" />Teach penguins to fly</label>
-                        </div>
-                    </li>
-                </ul>
-                <div class="todo-footer">
-                    <strong><span class="count-todos"></span></strong> Items Left
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="todolist">
+                     <h1>Completed</h1>
+                        <ul id="done-items" class="list-unstyled">
+                            <li ng-repeat="completeTask in ctrl.completeTasks track by $index">
+                                <span
+                                      class="bg-info glyphicon glyphicon-menu-left"
+                                      ng-click="reopenCompleteTask(completeTask.id)"
+                                ></span>
+                                <s>{{ completeTask.title }}</s>
+                                <span class=pull-right>
+                                    <close-button task=completeTask>
+                                    </close-button>
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="todolist">
-             <h1>Already Done</h1>
-                <ul id="done-items" class="list-unstyled">
-                    <li>Some item <button class="remove-item btn btn-default btn-xs pull-right"><span class="glyphicon glyphicon-remove"></span></button></li>
-                    
-                </ul>
-            </div>
-        </div>
-    </div>
-</div>
+        <script src="angular-1.4.0-beta.2/angular.js"></script>
+        <script src="angular-1.4.0-beta.2/angular-resource.js"></script>
+        <script src="task.js"></script>
+    </body>
